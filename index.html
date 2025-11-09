@@ -2,622 +2,1612 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Числовая Гонка</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bubble Stack</title>
+    
+    <!-- VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    
+    <!-- Библиотеки -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    
+    <!-- Новый шрифт -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&family=Montserrat:wght@400;700&family=Lobster&family=Press+Start+2P&family=Caveat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        /* Общие стили и темы */
         :root {
-            --bg-color: #f0f2f5;
-            --text-color: #1a202c;
-            --primary-color: #4a90e2;
-            --primary-hover: #357abd;
-            --modal-bg: rgba(255, 255, 255, 0.9);
-            --modal-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            --button-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
-            --border-color: #e2e8f0;
+            /* Новая "конфетная" палитра */
+            --bg-gradient-top: #89f7fe;   /* Светло-голубой */
+            --bg-gradient-bottom: #66a6ff; /* Ярко-голубой */
+            --text-dark: #34495e;     /* Темно-синий */
+            --text-light: #8a9bad;    /* Серо-синий */
+            --primary: #ff7eb9;      /* Розовый */
+            --primary-shadow: rgba(255, 126, 185, 0.4);
+            --secondary: #fde36d;     /* Желтый */
+            --secondary-shadow: rgba(253, 227, 109, 0.4);
+            --danger: #ff6b6b;        /* Красный */
+            --danger-shadow: rgba(255, 107, 107, 0.4);
+            --white: #ffffff;
+            
+            --font-main: 'Nunito', sans-serif;
         }
 
-        [data-theme="cosmos"] {
-            --bg-color: #1a202c;
-            --text-color: #edf2f7;
-            --primary-color: #00f5d4;
-            --primary-hover: #00bfa5;
-            --modal-bg: rgba(26, 32, 44, 0.95);
-            --modal-shadow: 0 10px 25px rgba(0, 245, 212, 0.2);
-            --button-shadow: 0 4px 14px 0 rgba(0, 245, 212, 0.2);
-            --border-color: #4a5568;
-        }
-
-        [data-theme="nature"] {
-            --bg-color: #f0fff4;
-            --text-color: #2f3e46;
-            --primary-color: #4caf50;
-            --primary-hover: #388e3c;
-            --modal-bg: rgba(232, 245, 233, 0.95);
-            --modal-shadow: 0 10px 25px rgba(47, 62, 70, 0.2);
-            --button-shadow: 0 4px 14px 0 rgba(76, 175, 80, 0.3);
-            --border-color: #a5d6a7;
-        }
-        
-        [data-theme="retro"] {
-            --bg-color: #fdf6e3;
-            --text-color: #654f3b;
-            --primary-color: #d35400;
-            --primary-hover: #a04000;
-            --modal-bg: rgba(253, 246, 227, 0.95);
-            --modal-shadow: 0 10px 25px rgba(101, 79, 59, 0.2);
-            --button-shadow: 0 4px 14px 0 rgba(211, 84, 0, 0.3);
-            --border-color: #bfa88b;
-        }
-
-        [data-theme="neon"] {
-            --bg-color: #0d0221;
-            --text-color: #f0f0f0;
-            --primary-color: #ff00ff;
-            --primary-hover: #c700c7;
-            --modal-bg: rgba(13, 2, 33, 0.9);
-            --modal-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
-            --button-shadow: 0 0 15px #ff00ff;
-            --border-color: #ff00ff;
-        }
-        
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.5s, color 0.5s;
-            touch-action: manipulation; /* Отключает двойной тап для масштабирования */
-            -webkit-tap-highlight-color: transparent; /* Убирает подсветку при тапе */
-        }
-
-        .screen {
-            height: 100vh;
-            height: -webkit-fill-available; /* Для iOS Safari */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s ease-in-out;
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            height: 100%;
             width: 100%;
+            position: relative;
+            font-family: var(--font-main);
+            color: var(--text-dark);
+            background: linear-gradient(180deg, var(--bg-gradient-top) 0%, var(--bg-gradient-bottom) 100%);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
-        #main-menu .main-title {
-             font-family: 'Roboto', sans-serif;
-             font-weight: 900;
-             letter-spacing: -0.05em;
-             text-shadow: 3px 3px 0 rgba(0,0,0,0.05);
+        #container {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
-
-        .main-btn {
-            background-color: var(--primary-color);
-            color: var(--bg-color);
-            font-weight: bold;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: var(--button-shadow);
-            transition: transform 0.2s, background-color 0.3s, box-shadow 0.3s;
+        
+        #game {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
         }
-        .main-btn:hover {
-            transform: translateY(-3px);
-            background-color: var(--primary-hover);
-            box-shadow: 0 7px 20px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        .icon-btn {
-            background: transparent;
-            border: 2px solid var(--border-color);
-            color: var(--text-color);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-        .icon-btn:hover {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: var(--bg-color);
-        }
-        .icon-btn svg {
-            width: 24px;
-            height: 24px;
-        }
-
-        .modal-overlay {
-            position: fixed;
+        
+        .ui-layer {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 100;
+            justify-content: center;
+            pointer-events: none;
+            text-align: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-content {
-            background-color: var(--modal-bg);
-            padding: 2rem;
-            border-radius: 1.5rem;
-            box-shadow: var(--modal-shadow);
-            width: 90%;
-            max-width: 400px;
-            transform: scale(0.9);
-            transition: transform 0.3s ease-out;
-        }
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-
-        /* Игровое поле */
-        #game-board {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            max-width: 500px;
-            aspect-ratio: 9 / 16;
-            overflow: hidden;
-            border-radius: 1.5rem;
-            border: 3px solid var(--primary-color);
-            background-color: var(--modal-bg);
-            box-shadow: var(--modal-shadow);
+        .ui-layer > * {
+            pointer-events: all;
         }
         
-        .number-cell {
-            position: absolute;
+        /* --- Главное Меню --- */
+        #main-menu .main-content {
+            width: 100%;
+            max-width: 350px;
+        }
+        #main-menu .title {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--white);
+            letter-spacing: -0.02em;
+            line-height: 1;
+            margin-bottom: 2rem;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+        
+        .button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 16px; /* Более округлый */
+            padding: 18px 30px;
+            font-size: 1.2rem;
+            font-family: var(--font-main);
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 5px 20px var(--primary-shadow);
+            text-transform: uppercase;
+        }
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px var(--primary-shadow);
+        }
+        .button.button-secondary {
+            background-color: var(--secondary);
+            color: var(--text-dark);
+            box-shadow: 0 5px 20px var(--secondary-shadow);
+        }
+        .button.button-secondary:hover {
+            box-shadow: 0 8px 25px var(--secondary-shadow);
+        }
+         .button.button-danger {
+            background-color: var(--danger);
+            color: var(--white);
+            box-shadow: 0 5px 20px var(--danger-shadow);
+        }
+        .button.button-danger:hover {
+            box-shadow: 0 8px 25px var(--danger-shadow);
+        }
+        .button.button-simple {
+             background-color: var(--white);
+            color: var(--text-dark);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .button.button-simple:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        #menu-icon-buttons {
             display: flex;
             justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .icon-button {
+            background: var(--white);
+            color: var(--text-light);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
             align-items: center;
+            justify-content: center;
             cursor: pointer;
-            user-select: none;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: var(--text-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
         }
-        .number-cell.found {
-            transform: scale(0) !important;
+        .icon-button:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+        }
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        /* --- Игровой UI --- */
+        #in-game-ui {
+            justify-content: flex-start;
+            pointer-events: none;
+        }
+        #score {
+            width: 100%;
+            text-align: center;
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--white);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: all 0.5s ease;
+            transform: translateY(-200px) scale(1);
             opacity: 0;
-            transition: transform 0.3s, opacity 0.3s;
+            padding-top: 2vh;
         }
-        .number-cell:active {
-            transform: scale(0.9) !important;
+        
+        #in-game-stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem; /* Уменьшил */
+            font-weight: 700;
+            color: var(--white);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            gap: 10px;
         }
-
-        .hidden {
-            display: none;
+        #in-game-stats-blitz, #in-game-stats-precision {
+            background: rgba(0,0,0,0.1);
+            padding: 8px 12px; /* Уменьшил */
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.3;
         }
-        .visually-hidden {
+        #in-game-stats-blitz span, #in-game-stats-precision span {
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+        #in-game-stats-blitz {
+            color: var(--danger);
+        }
+         #in-game-stats-precision {
+            color: var(--secondary);
+        }
+        
+        #perfect-placement-text {
+            position: absolute;
+            top: 25vh;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--secondary);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
             opacity: 0;
             pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.5s ease;
+        }
+        
+        #pause-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            pointer-events: all;
+        }
+        #pause-button span {
+            display: block;
+            width: 4px;
+            height: 18px;
+            background-color: var(--text-dark);
+            margin: 0 2px;
+            border-radius: 2px;
+        }
+        
+        /* --- Модальные окна --- */
+        .modal-background, .menu-background {
+            background-color: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        .modal-box, .menu-box {
+            background: var(--white);
+            padding: 30px 30px 25px 30px;
+            border-radius: 24px; /* Более округлый */
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: clamp(280px, 90vw, 400px);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .menu-box .button, .modal-box .button {
+            display: block;
+            margin: 15px auto 0 auto;
+            width: 100%;
+        }
+        .modal-box h2, .menu-box h2 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 1em;
+            margin-top: 0;
+        }
+        .modal-box p {
+            text-align: left;
+            margin-bottom: 1em;
+            line-height: 1.6;
+            color: var(--text-light);
+            font-weight: 700;
+        }
+        .modal-box ul {
+            text-align: left;
+            padding-left: 20px;
+            margin-bottom: 1.5em;
+            line-height: 1.6;
+            color: var(--text-light);
+            font-weight: 700;
+        }
+        .modal-box strong {
+            color: var(--text-dark);
+            font-weight: 900;
+        }
+        
+        .menu-box .score-display {
+            margin-bottom: 1.5em;
+        }
+        .menu-box .score-display span {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 700;
+        }
+        .menu-box .score-display strong {
+            display: block;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+        
+        /* --- Новая Сетка Статистики --- */
+        #stats-modal h2 {
+            text-align: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1.5rem 1rem;
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+        .stats-grid span {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+        .stats-grid strong {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .stats-grid strong svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--secondary);
+        }
+        /* --- Конец Сетки Статистики --- */
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        /* --- Переключатель (Toggle) --- */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* --- Состояния --- */
+        .hidden {
+            display: none !important;
+        }
+        
+        #container.playing #score,
+        #container.ended #score {
+            transform: translateY(0px) scale(1);
+            opacity: 1;
+        }
+        
+        #container.ended #score {
+            transform: translateY(4vh) scale(1.2);
         }
     </style>
 </head>
-<body class="overflow-hidden">
+<body>
+    <!-- Фоновая музыка -->
+    <audio id="bg-music" loop src="music.mp3"></audio>
 
-    <!-- Главное меню -->
-    <div id="main-menu" class="screen p-4">
-        <div class="text-center">
-             <h1 class="main-title text-6xl md:text-8xl mb-12">
-                Числовая <span class="text-[var(--primary-color)]">Гонка</span>
-            </h1>
-        </div>
-        <div class="flex flex-col space-y-4 w-full max-w-xs">
-            <button class="main-btn" onclick="game.startGame('easy')">Легко</button>
-            <button class="main-btn" onclick="game.startGame('medium')">Средне</button>
-            <button class="main-btn" onclick="game.startGame('hard')">Сложно</button>
-            <button class="main-btn" onclick="game.startGame('expert')">Эксперт</button>
-        </div>
-        <div class="flex space-x-4 mt-12">
-            <button class="icon-btn flex justify-center items-center" onclick="ui.showModal('rules-modal')">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" /></svg>
-            </button>
-            <button class="icon-btn flex justify-center items-center" onclick="ui.showModal('stats-modal')">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
-            </button>
-            <button class="icon-btn flex justify-center items-center" onclick="ui.showModal('settings-modal')">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
-        </div>
-    </div>
+    <div id="container">
+        <!-- Игровое поле Three.js -->
+        <div id="game"></div>
 
-    <!-- Игровой экран -->
-    <div id="game-screen" class="screen p-2 hidden">
-        <div class="w-full max-w-[500px] flex justify-between items-center px-2 mb-2 flex-shrink-0">
-            <div>
-                <span class="text-xl font-bold">Искать:</span>
-                <span id="next-number" class="text-3xl font-bold text-[var(--primary-color)]">1</span>
-            </div>
-            <div id="timer" class="text-3xl font-bold">00:00</div>
-            <button class="icon-btn flex justify-center items-center" onclick="game.pauseGame()">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-6-13.5v13.5" /></svg>
-            </button>
-        </div>
-        <div class="w-full flex-grow flex items-center justify-center overflow-hidden min-h-0">
-             <div id="game-board"></div>
-        </div>
-    </div>
-
-    <!-- Модальное окно - Пауза -->
-    <div id="pause-modal" class="modal-overlay">
-        <div class="modal-content text-center">
-            <h2 class="text-4xl font-bold mb-8">Пауза</h2>
-            <div class="flex flex-col space-y-4">
-                <button class="main-btn" onclick="game.resumeGame()">Продолжить</button>
-                <button class="main-btn" onclick="game.restartGame()">Перезапустить</button>
-                <button class="main-btn" onclick="game.quitGame()">Главное меню</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно - Победа -->
-    <div id="win-modal" class="modal-overlay">
-        <div class="modal-content text-center">
-            <h2 class="text-4xl font-bold mb-4 text-[var(--primary-color)]">Победа!</h2>
-            <p class="text-lg mb-1">Ваше время:</p>
-            <p id="win-time" class="text-5xl font-bold mb-4">00:00</p>
-            <p class="text-lg mb-1">Лучшее время:</p>
-            <p id="best-time" class="text-2xl font-bold mb-8">00:00</p>
-            <div class="flex flex-col space-y-4">
-                <button class="main-btn" onclick="game.restartGame()">Играть снова</button>
-                <button class="main-btn" onclick="game.quitGame()">Главное меню</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно - Правила -->
-    <div id="rules-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-3xl font-bold mb-4 text-center">Правила Игры</h2>
-            <p class="text-lg text-center">
-                На игровом поле в случайном порядке разбросаны числа.
-                Ваша задача - как можно быстрее найти и нажать на все числа по порядку, начиная с 1.
-            </p>
-            <button class="main-btn w-full mt-8" onclick="ui.hideAllModals()">Понятно</button>
-        </div>
-    </div>
-    
-    <!-- Модальное окно - Статистика -->
-    <div id="stats-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-3xl font-bold mb-6 text-center">Статистика</h2>
-            <div class="space-y-3">
-                <div class="flex justify-between p-3 rounded-lg border-2 border-[var(--border-color)]">
-                    <span class="font-bold">Легко:</span><span id="stats-easy">--:--</span>
+        <!-- --- Главное Меню --- -->
+        <div id="main-menu" class="ui-layer">
+            <div class="main-content">
+                <div class="title">BUBBLE<br>STACK</div>
+                <div class="button-group">
+                    <button id="start-classic-button" class="button">Классика</button>
+                    <button id="start-blitz-button" class="button button-secondary">Блиц</button>
+                    <button id="start-precision-button" class="button button-secondary">Точность</button>
                 </div>
-                <div class="flex justify-between p-3 rounded-lg border-2 border-[var(--border-color)]">
-                    <span class="font-bold">Средне:</span><span id="stats-medium">--:--</span>
-                </div>
-                <div class="flex justify-between p-3 rounded-lg border-2 border-[var(--border-color)]">
-                    <span class="font-bold">Сложно:</span><span id="stats-hard">--:--</span>
-                </div>
-                <div class="flex justify-between p-3 rounded-lg border-2 border-[var(--border-color)]">
-                    <span class="font-bold">Эксперт:</span><span id="stats-expert">--:--</span>
+                <div id="menu-icon-buttons">
+                    <button id="rules-button" class="icon-button" aria-label="Правила">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+                    </button>
+                    <button id="stats-button" class="icon-button" aria-label="Статистика">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z"/></svg>
+                    </button>
+                    <button id="settings-button" class="icon-button" aria-label="Настройки">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.08.49 0 .61.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>
+                    </button>
                 </div>
             </div>
-             <button class="main-btn w-full mt-8" onclick="ui.hideAllModals()">Закрыть</button>
         </div>
-    </div>
-    
-    <!-- Модальное окно - Настройки -->
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-3xl font-bold mb-6 text-center">Настройки Темы</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <button class="p-4 rounded-lg text-lg font-bold border-4" style="background-color: #f0f2f5; border-color: #4a90e2; color: #1a202c;" onclick="ui.setTheme('default')">Светлая</button>
-                <button class="p-4 rounded-lg text-lg font-bold border-4" style="background-color: #1a202c; border-color: #00f5d4; color: #edf2f7;" onclick="ui.setTheme('cosmos')">Космос</button>
-                <button class="p-4 rounded-lg text-lg font-bold border-4" style="background-color: #f0fff4; border-color: #4caf50; color: #2f3e46;" onclick="ui.setTheme('nature')">Природа</button>
-                <button class="p-4 rounded-lg text-lg font-bold border-4" style="background-color: #fdf6e3; border-color: #d35400; color: #654f3b;" onclick="ui.setTheme('retro')">Ретро</button>
-                <button class="p-4 rounded-lg text-lg font-bold border-4 col-span-2" style="background-color: #0d0221; border-color: #ff00ff; color: #f0f0f0;" onclick="ui.setTheme('neon')">Неон</button>
+        
+        <!-- --- Модальное: Правила --- -->
+        <div id="rules-modal" class="ui-layer modal-background hidden">
+            <div class="modal-box">
+                <h2>Правила Игры</h2>
+                <p>Ваша задача — построить как можно более высокую башню (пилон), устанавливая блоки друг на друга.</p>
+                <ul>
+                    <li>Нажимайте на экран, чтобы остановить движущийся блок.</li>
+                    <li>Часть блока, вышедшая за пределы нижнего, отколется.</li>
+                    <li>Башня станет уже, и строить будет сложнее!</li>
+                </ul>
+                <p><strong>⭐ Идеальное Комбо:</strong></p>
+                <ul>
+                    <li>Установите <strong>6 блоков идеально</strong> подряд, чтобы активировать комбо.</li>
+                    <li>Каждое следующее идеальное попадание будет <strong>увеличивать размер</strong> платформы, возвращая ее к первоначальной ширине!</li>
+                </ul>
+                <p><strong>Игровые Режимы:</strong></p>
+                 <ul>
+                    <li><strong>Классика:</strong> Строй башню как можно выше. Рекорд - твой лучший результат.</li>
+                    <li><strong>Блиц:</strong> Скорость блоков увеличивается с каждым этажом. Как высоко ты сможешь зайти, пока не промахнешься?</li>
+                    <li><strong>Точность:</strong> Одно неверное (неидеальное) попадание = конец игры. Проверь свою точность!</li>
+                </ul>
+                <button id="close-rules-button" class="button">Понятно!</button>
             </div>
-            <button class="main-btn w-full mt-8" onclick="ui.hideAllModals()">Закрыть</button>
         </div>
-    </div>
+        
+        <!-- --- Модальное: Статистика (Обновлено) --- -->
+        <div id="stats-modal" class="ui-layer modal-background hidden">
+            <div class="modal-box">
+                <h2>Статистика</h2>
+                
+                <div class="stats-grid">
+                    <span>Рекорд (Классика)</span>
+                    <strong>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.93C7.63 13.6 8 14.47 8 15.4c0 1.99-1.35 3.64-3.13 3.96-1.09.2-1.87 1.17-1.87 2.3v.01C3 21.82 3.18 22 3.5 22h17c.32 0 .5-.18.5-.34v-.01c0-1.13-.78-2.1-1.87-2.3C17.35 19.04 16 17.39 16 15.4c0-.93.37-1.8.9-2.47C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 7h14v1c0 1.95-1.4 3.58-3.23 3.92C15.29 11.96 15 12.45 15 13c0 1.48-.8 2.75-1.92 3.39C12.4 16.74 11.6 17 10.75 17c-.82 0-1.58-.25-2.22-.68C7.41 15.7 6.6 14.43 6.6 13c0-.55.21-1.04.57-1.42C9.6 11.58 11 9.95 11 8V7H5z"/></svg>
+                        <span id="stats-high-score-classic">0</span>
+                    </strong>
+                    
+                    <span>Рекорд (Блиц)</span>
+                    <strong>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.93C7.63 13.6 8 14.47 8 15.4c0 1.99-1.35 3.64-3.13 3.96-1.09.2-1.87 1.17-1.87 2.3v.01C3 21.82 3.18 22 3.5 22h17c.32 0 .5-.18.5-.34v-.01c0-1.13-.78-2.1-1.87-2.3C17.35 19.04 16 17.39 16 15.4c0-.93.37-1.8.9-2.47C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 7h14v1c0 1.95-1.4 3.58-3.23 3.92C15.29 11.96 15 12.45 15 13c0 1.48-.8 2.75-1.92 3.39C12.4 16.74 11.6 17 10.75 17c-.82 0-1.58-.25-2.22-.68C7.41 15.7 6.6 14.43 6.6 13c0-.55.21-1.04.57-1.42C9.6 11.58 11 9.95 11 8V7H5z"/></svg>
+                        <span id="stats-high-score-blitz">0</span>
+                    </strong>
+                    
+                    <span>Рекорд (Точность)</span>
+                    <strong>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.93C7.63 13.6 8 14.47 8 15.4c0 1.99-1.35 3.64-3.13 3.96-1.09.2-1.87 1.17-1.87 2.3v.01C3 21.82 3.18 22 3.5 22h17c.32 0 .5-.18.5-.34v-.01c0-1.13-.78-2.1-1.87-2.3C17.35 19.04 16 17.39 16 15.4c0-.93.37-1.8.9-2.47C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 7h14v1c0 1.95-1.4 3.58-3.23 3.92C15.29 11.96 15 12.45 15 13c0 1.48-.8 2.75-1.92 3.39C12.4 16.74 11.6 17 10.75 17c-.82 0-1.58-.25-2.22-.68C7.41 15.7 6.6 14.43 6.6 13c0-.55.21-1.04.57-1.42C9.6 11.58 11 9.95 11 8V7H5z"/></svg>
+                        <span id="stats-high-score-precision">0</span>
+                    </strong>
+                </div>
+                
+                <button id="close-stats-button" class="button">Закрыть</button>
+            </div>
+        </div>
+        
+        <!-- --- Модальное: Настройки (Обновлено) --- -->
+        <div id="settings-modal" class="ui-layer modal-background hidden">
+            <div class="modal-box">
+                <h2>Настройки</h2>
+                <div class="settings-row">
+                    <span>Музыка</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="music-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <span>Звуки (SFX)</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="sfx-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <span>Вибрация</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="taptic-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="close-settings-button" class="button">Закрыть</button>
+            </div>
+        </div>
 
+        <!-- --- Игровой UI --- -->
+        <div id="in-game-ui" class="ui-layer hidden">
+            <div id="score">0</div>
+            
+            <!-- Динамические статы для режимов -->
+            <div id="in-game-stats">
+                 <div id="in-game-stats-blitz" class="hidden">
+                    <strong id="speed-indicator">x1.0</strong>
+                    <span>Скорость</span>
+                </div>
+                <div id="in-game-stats-precision" class="hidden">
+                    <strong id="strike-indicator">🔥 0</strong>
+                    <span>Идеально</span>
+                </div>
+            </div>
+            
+            <div id="perfect-placement-text">ИДЕАЛЬНО!</div>
+            <div id="pause-button">
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- --- Меню Паузы --- -->
+        <div id="pause-menu" class="ui-layer menu-background hidden">
+            <div class="menu-box">
+                <h2>Пауза</h2>
+                <button id="resume-button" class="button">Продолжить</button>
+                <button id="restart-button" class="button button-simple">Заново</button>
+                <button id="menu-button" class="button button-simple">В меню</button>
+            </div>
+        </div>
+        
+        <!-- --- Меню Конец Игры --- -->
+        <div id="game-over-menu" class="ui-layer menu-background hidden">
+             <div class="menu-box">
+                <h2 id="game-over-title">Игра окончена</h2>
+                <div class="score-display">
+                    <span>Ваш счет</span>
+                    <strong id="final-score">0</strong>
+                </div>
+                 <div class="score-display">
+                    <span id="game-over-record-label">Рекорд</span>
+                    <strong id="game-over-high-score">0</strong>
+                </div>
+                <button id="restart-game-over-button" class="button">Играть снова</button>
+                <button id="menu-game-over-button" class="button button-simple">В меню</button>
+            </div>
+        </div>
+        
+        <!-- --- Меню Уровень пройден --- -->
+        <div id="level-complete-menu" class="ui-layer menu-background hidden">
+             <div class="menu-box">
+                <h2>Уровень пройден!</h2>
+                <div class="score-display">
+                    <span>Уровень</span>
+                    <strong id="level-complete-level">1</strong>
+                </div>
+                <button id="next-level-button" class="button">Следующий уровень</button>
+                <button id="menu-level-complete-button" class="button button-simple">В меню</button>
+            </div>
+        </div>
+        
+    </div>
 
     <script>
-        const config = {
-            difficulties: {
-                easy: { maxNumber: 25 },
-                medium: { maxNumber: 50 },
-                hard: { maxNumber: 75 },
-                expert: { maxNumber: 100 },
-            },
-            fonts: ['Roboto', 'Montserrat', 'Lobster', 'Press Start 2P', 'Caveat'],
-        };
+        console.clear();
 
-        const state = {
-            currentNumber: 1,
-            maxNumber: 0,
-            timerInterval: null,
-            startTime: 0,
-            paused: false,
-            difficulty: 'easy',
-        };
+        // --- Класс Сцены (Stage) ---
+        // (Отвечает за рендер, камеру, свет)
+        class Stage {
+            constructor() {
+                this.container = document.getElementById('game');
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setClearColor(0x000000, 0);
+                this.container.appendChild(this.renderer.domElement);
+                
+                this.scene = new THREE.Scene();
+                
+                const aspect = window.innerWidth / window.innerHeight;
+                const d = 20;
+                this.camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, -100, 1000);
+                this.camera.position.set(2, 2, 2);
+                this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+                
+                this.light = new THREE.DirectionalLight(0xffffff, 0.6);
+                this.light.position.set(0, 499, 0);
+                this.scene.add(this.light);
+                
+                this.softLight = new THREE.AmbientLight(0xffffff, 0.7);
+                this.scene.add(this.softLight);
 
-        const elements = {
-            mainMenu: document.getElementById('main-menu'),
-            gameScreen: document.getElementById('game-screen'),
-            gameBoard: document.getElementById('game-board'),
-            nextNumber: document.getElementById('next-number'),
-            timer: document.getElementById('timer'),
-            modals: {
-                pause: document.getElementById('pause-modal'),
-                win: document.getElementById('win-modal'),
-                rules: document.getElementById('rules-modal'),
-                stats: document.getElementById('stats-modal'),
-                settings: document.getElementById('settings-modal'),
-            },
-            winTime: document.getElementById('win-time'),
-            bestTime: document.getElementById('best-time'),
-        };
+                window.addEventListener('resize', () => this.onResize());
+                this.onResize();
+            }
 
-        function formatTime(totalSeconds) {
-            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-            const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
-            return `${minutes}:${seconds}`;
+            setCamera(y, speed = 0.3) {
+                gsap.to(this.camera.position, { duration: speed, y: y + 4, ease: "power1.inOut" });
+                gsap.to(this.camera.lookAt, { duration: speed, y: y, ease: "power1.inOut" });
+            }
+
+            onResize() {
+                const viewSize = 30;
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.camera.left = window.innerWidth / -viewSize;
+                this.camera.right = window.innerWidth / viewSize;
+                this.camera.top = window.innerHeight / viewSize;
+                this.camera.bottom = window.innerHeight / -viewSize;
+                this.camera.updateProjectionMatrix();
+            }
+
+            render = () => this.renderer.render(this.scene, this.camera);
+            add = (elem) => this.scene.add(elem);
+            remove = (elem) => this.scene.remove(elem);
         }
 
-        const ui = {
-            showScreen(screen) {
-                elements.mainMenu.classList.add('visually-hidden');
-                elements.gameScreen.classList.add('visually-hidden');
+        // --- Класс Блока (Block) ---
+        // (Отвечает за логику одного блока)
+        class Block {
+            constructor(block, newDimensions = null) {
+                this.STATES = { ACTIVE: 'active', STOPPED: 'stopped', MISSED: 'missed' };
+                this.MOVE_AMOUNT = 12;
+
+                this.targetBlock = block;
+                this.index = (this.targetBlock ? this.targetBlock.index : 0) + 1;
+                this.workingPlane = this.index % 2 ? 'x' : 'z';
+                this.workingDimension = this.index % 2 ? 'width' : 'depth';
+
+                this.dimension = {
+                    width: (newDimensions && newDimensions.width) || (this.targetBlock ? this.targetBlock.dimension.width : 10),
+                    height: 2,
+                    depth: (newDimensions && newDimensions.depth) || (this.targetBlock ? this.targetBlock.dimension.depth : 10),
+                };
                 
-                setTimeout(() => {
-                    elements.mainMenu.classList.add('hidden');
-                    elements.gameScreen.classList.add('hidden');
-                    screen.classList.remove('hidden');
-                    setTimeout(() => screen.classList.remove('visually-hidden'), 50);
-                }, 300);
-            },
+                this.originalDimension = { ...this.dimension };
 
-            showModal(modalId) {
-                const modal = elements.modals[modalId.replace('-modal', '')];
-                if (modalId === 'stats-modal') {
-                    this.updateStats();
+                this.position = {
+                    x: this.targetBlock ? this.targetBlock.position.x : 0,
+                    y: this.dimension.height * this.index,
+                    z: this.targetBlock ? this.targetBlock.position.z : 0,
+                };
+                
+                // --- Возвращаем красочную палитру из оригинального файла ---
+                this.colorOffset = this.targetBlock ? this.targetBlock.colorOffset : Math.round(Math.random() * 100);
+                if (!this.targetBlock) {
+                    this.color = new THREE.Color(0x34495e); // Базовый цвет
+                } else {
+                    const offset = this.index + this.colorOffset;
+                    const r = Math.sin(0.3 * offset) * 55 + 200;
+                    const g = Math.sin(0.3 * offset + 2) * 55 + 200;
+                    const b = Math.sin(0.3 * offset + 4) * 55 + 200;
+                    this.color = new THREE.Color(r / 255, g / 255, b / 255);
                 }
-                modal.classList.add('active');
-            },
+                // --- Конец ---
 
-            hideAllModals() {
-                Object.values(elements.modals).forEach(modal => modal.classList.remove('active'));
-            },
+                this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED;
+                
+                // Усложнение скорости
+                this.speed = -0.1 - (this.index * 0.005);
+                if (this.speed < -0.3) this.speed = -0.3; // Ограничитель
+                
+                this.direction = this.speed;
 
-            updateStats() {
-                const stats = storage.getStats();
-                document.getElementById('stats-easy').textContent = stats.easy ? formatTime(stats.easy) : '--:--';
-                document.getElementById('stats-medium').textContent = stats.medium ? formatTime(stats.medium) : '--:--';
-                document.getElementById('stats-hard').textContent = stats.hard ? formatTime(stats.hard) : '--:--';
-                document.getElementById('stats-expert').textContent = stats.expert ? formatTime(stats.expert) : '--:--';
-            },
+                const geometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
+                geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
+                
+                // Используем ToonMaterial для "мультяшного" стиля
+                this.material = new THREE.MeshToonMaterial({ color: this.color.getHex() });
+                
+                this.mesh = new THREE.Mesh(geometry, this.material);
+                this.mesh.position.set(this.position.x, this.position.y, this.position.z);
 
-            setTheme(themeName) {
-                document.documentElement.setAttribute('data-theme', themeName);
-                storage.saveTheme(themeName);
-            },
-            
-            loadTheme() {
-                const savedTheme = storage.getTheme();
-                if (savedTheme) {
-                    this.setTheme(savedTheme);
+                if (this.state === this.STATES.ACTIVE) {
+                    this.position[this.workingPlane] = Math.random() > 0.5 ? -this.MOVE_AMOUNT : this.MOVE_AMOUNT;
                 }
             }
-        };
 
-        const storage = {
-            getStats() {
-                return JSON.parse(localStorage.getItem('numberRaceStats')) || {};
-            },
-            saveStats(difficulty, time) {
-                const stats = this.getStats();
-                if (!stats[difficulty] || time < stats[difficulty]) {
-                    stats[difficulty] = time;
-                    localStorage.setItem('numberRaceStats', JSON.stringify(stats));
-                }
-            },
-            saveTheme(themeName) {
-                localStorage.setItem('numberRaceTheme', themeName);
-            },
-            getTheme() {
-                return localStorage.getItem('numberRaceTheme');
+            reverseDirection = () => {
+                this.direction = this.direction > 0 ? this.speed : Math.abs(this.speed);
             }
-        };
 
-        const game = {
-            startGame(difficulty) {
-                state.difficulty = difficulty;
-                state.maxNumber = config.difficulties[difficulty].maxNumber;
-                this.reset();
-                ui.showScreen(elements.gameScreen);
+            place() {
+                this.state = this.STATES.STOPPED;
+
+                let overlap = this.targetBlock.dimension[this.workingDimension] - Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane]);
+
+                const blocksToReturn = {
+                    plane: this.workingPlane,
+                    direction: this.direction,
+                    bonus: false
+                };
                 
-                // Задержка для корректной отрисовки поля перед генерацией чисел
-                setTimeout(() => {
-                    this.generateNumbers();
-                    this.startTimer();
-                }, 400);
-            },
-
-            reset() {
-                state.currentNumber = 1;
-                state.paused = false;
-                elements.gameBoard.innerHTML = '';
-                elements.nextNumber.textContent = '1';
-                elements.timer.textContent = '00:00';
-                clearInterval(state.timerInterval);
-            },
-            
-            restartGame() {
-                ui.hideAllModals();
-                this.startGame(state.difficulty);
-            },
-            
-            quitGame() {
-                ui.hideAllModals();
-                ui.showScreen(elements.mainMenu);
-            },
-
-            generateNumbers() {
-                const boardWidth = elements.gameBoard.clientWidth;
-                const boardHeight = elements.gameBoard.clientHeight;
-                const positions = [];
-
-                for (let i = 1; i <= state.maxNumber; i++) {
-                    const cell = document.createElement('div');
-                    cell.textContent = i;
-                    cell.dataset.number = i;
-                    cell.classList.add('number-cell');
-
-                    const { size, x, y } = this.getSafePosition(boardWidth, boardHeight, positions);
-
-                    positions.push({ x, y, size });
-
-                    cell.style.width = `${size}px`;
-                    cell.style.height = `${size}px`;
-                    cell.style.left = `${x}px`;
-                    cell.style.top = `${y}px`;
-                    
-                    const randomFont = config.fonts[Math.floor(Math.random() * config.fonts.length)];
-                    const randomRotation = Math.random() * 90 - 45;
-                    const randomScale = 0.8 + Math.random() * 0.4;
-                    
-                    cell.style.fontFamily = randomFont;
-                    cell.style.fontSize = `${size * 0.6}px`;
-                    cell.style.transform = `rotate(${randomRotation}deg) scale(${randomScale})`;
-
-                    cell.addEventListener('click', this.handleNumberClick);
-                    elements.gameBoard.appendChild(cell);
+                // Идеальное попадание
+                if (this.dimension[this.workingDimension] - overlap < 0.3) {
+                    blocksToReturn.bonus = true;
+                    this.dimension.width = this.targetBlock.dimension.width;
+                    this.dimension.depth = this.targetBlock.dimension.depth;
+                    overlap = this.targetBlock.dimension[this.workingDimension];
+                    this.position.x = this.targetBlock.position.x;
+                    this.position.z = this.targetBlock.position.z;
                 }
-            },
 
-            getSafePosition(boardWidth, boardHeight, existingPositions) {
-                let size, x, y, isOverlapping;
-                const maxAttempts = 150; // Увеличено кол-во попыток
-                let attempt = 0;
+                if (overlap > 0) {
+                    const choppedDimensions = { ...this.dimension };
+                    choppedDimensions[this.workingDimension] -= overlap;
+                    this.dimension[this.workingDimension] = overlap;
 
-                do {
-                    isOverlapping = false;
-                    const scaleFactor = Math.min(boardWidth, boardHeight) / 400;
-                    
-                    let sizeModifier = 1.0;
-                    if (state.difficulty === 'hard') sizeModifier = 0.88;
-                    if (state.difficulty === 'expert') sizeModifier = 0.82;
+                    // Установленный блок
+                    const placedGeometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
+                    placedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
+                    const placedMesh = new THREE.Mesh(placedGeometry, this.material);
 
-                    size = (Math.random() * 30 + 35) * scaleFactor * sizeModifier;
-                    x = Math.random() * (boardWidth - size);
-                    y = Math.random() * (boardHeight - size);
+                    // Обрезанный блок
+                    const choppedGeometry = new THREE.BoxGeometry(choppedDimensions.width, choppedDimensions.height, choppedDimensions.depth);
+                    choppedGeometry.applyMatrix4(new THREE.Matrix4().makeTranslation(choppedDimensions.width / 2, choppedDimensions.height / 2, choppedDimensions.depth / 2));
+                    const choppedMesh = new THREE.Mesh(choppedGeometry, this.material);
 
-                    for (const pos of existingPositions) {
-                        const dx = x - pos.x;
-                        const dy = y - pos.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        // Увеличиваем делитель, чтобы разрешить более плотное размещение
-                        if (distance < (size + pos.size) / 2.1) { 
-                            isOverlapping = true;
-                            break;
-                        }
-                    }
-                    attempt++;
-                } while (isOverlapping && attempt < maxAttempts);
+                    const choppedPosition = { x: this.position.x, y: this.position.y, z: this.position.z };
 
-                return { size, x, y };
-            },
-
-            handleNumberClick(e) {
-                if (state.paused) return;
-
-                const clickedNumber = parseInt(e.target.dataset.number);
-                
-                if (navigator.vibrate) {
-                    navigator.vibrate(50);
-                }
-                
-                if (clickedNumber === state.currentNumber) {
-                    e.target.classList.add('found');
-                    state.currentNumber++;
-                    
-                    if (state.currentNumber > state.maxNumber) {
-                        this.win();
+                    if (this.position[this.workingPlane] < this.targetBlock.position[this.workingPlane]) {
+                        this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane];
                     } else {
-                        elements.nextNumber.textContent = state.currentNumber;
+                        choppedPosition[this.workingPlane] += overlap;
+                    }
+
+                    placedMesh.position.set(this.position.x, this.position.y, this.position.z);
+                    choppedMesh.position.set(choppedPosition.x, choppedPosition.y, choppedPosition.z);
+
+                    blocksToReturn.placed = placedMesh;
+                    if (!blocksToReturn.bonus) blocksToReturn.chopped = choppedMesh;
+                } else {
+                    this.state = this.STATES.MISSED;
+                }
+                
+                return blocksToReturn;
+            }
+
+            tick() {
+                if (this.state === this.STATES.ACTIVE) {
+                    const value = this.position[this.workingPlane];
+                    if (value > this.MOVE_AMOUNT || value < -this.MOVE_AMOUNT) this.reverseDirection();
+                    this.position[this.workingPlane] += this.direction;
+                    this.mesh.position[this.workingPlane] = this.position[this.workingPlane];
+                }
+            }
+        }
+
+        // --- Класс Игры (Game) ---
+        // (Отвечает за всю логику)
+        class Game {
+            constructor() {
+                this.STATES = { MENU: 'menu', PLAYING: 'playing', PAUSED: 'paused', ENDED: 'ended', RESETTING: 'resetting', LEVEL_COMPLETE: 'level_complete' };
+                this.MODES = { CLASSIC: 'classic', BLITZ: 'blitz', PRECISION: 'precision' }; // <-- Изменены Режимы
+                this.VK_STORAGE_KEY = 'BubbleStackStats';
+                
+                this.stage = new Stage();
+                this.sounds = null; 
+                
+                // Настройки
+                this.settings = {
+                    music: true, // <-- Добавлена Музыка
+                    sfx: true,   // <-- Переименовано
+                    taptic: true // <-- Переименовано
+                };
+                
+                // Статистика
+                this.stats = {
+                    highScoreClassic: 0,
+                    highScoreBlitz: 0,     // <-- Изменено
+                    highScorePrecision: 0  // <-- Изменено
+                };
+
+                // UI Элементы
+                this.ui = {
+                    bgMusic: document.getElementById('bg-music'), // <-- Добавлена Музыка
+                    // Меню
+                    mainMenu: document.getElementById('main-menu'),
+                    pauseMenu: document.getElementById('pause-menu'),
+                    gameOverMenu: document.getElementById('game-over-menu'),
+                    levelCompleteMenu: document.getElementById('level-complete-menu'),
+                    // Модальные окна
+                    rulesModal: document.getElementById('rules-modal'),
+                    statsModal: document.getElementById('stats-modal'),
+                    settingsModal: document.getElementById('settings-modal'),
+                    // Игровые
+                    inGameUI: document.getElementById('in-game-ui'),
+                    score: document.getElementById('score'),
+                    perfectPlacementText: document.getElementById('perfect-placement-text'),
+                    gameCanvas: document.getElementById('game'),
+                    // Статистика
+                    statsHighScoreClassic: document.getElementById('stats-high-score-classic'),
+                    statsHighScoreBlitz: document.getElementById('stats-high-score-blitz'),       // <-- Изменено
+                    statsHighScorePrecision: document.getElementById('stats-high-score-precision'), // <-- Изменено
+                    // Статы в игре
+                    inGameStats: document.getElementById('in-game-stats'),
+                    inGameStatsBlitz: document.getElementById('in-game-stats-blitz'),         // <-- Изменено
+                    speedIndicator: document.getElementById('speed-indicator'),           // <-- Изменено
+                    inGameStatsPrecision: document.getElementById('in-game-stats-precision'), // <-- Изменено
+                    strikeIndicator: document.getElementById('strike-indicator'),         // <-- Изменено
+                    // Конец игры
+                    gameOverTitle: document.getElementById('game-over-title'),
+                    finalScore: document.getElementById('final-score'),
+                    gameOverRecordLabel: document.getElementById('game-over-record-label'),
+                    gameOverHighScore: document.getElementById('game-over-high-score'),
+                    // Уровень пройден
+                    levelCompleteLevel: document.getElementById('level-complete-level'),
+                    // Настройки
+                    musicToggle: document.getElementById('music-toggle'), // <-- Добавлено
+                    sfxToggle: document.getElementById('sfx-toggle'),     // <-- Изменено
+                    tapticToggle: document.getElementById('taptic-toggle')  // <-- Изменено
+                };
+
+                // Кнопки
+                this.buttons = {
+                    // Главное меню
+                    startClassic: document.getElementById('start-classic-button'),
+                    startBlitz: document.getElementById('start-blitz-button'),     // <-- Изменено
+                    startPrecision: document.getElementById('start-precision-button'), // <-- Изменено
+                    rules: document.getElementById('rules-button'),
+                    stats: document.getElementById('stats-button'),
+                    settings: document.getElementById('settings-button'),
+                    // Модальные окна
+                    closeRules: document.getElementById('close-rules-button'),
+                    closeStats: document.getElementById('close-stats-button'),
+                    closeSettings: document.getElementById('close-settings-button'),
+                    // Пауза
+                    pause: document.getElementById('pause-button'),
+                    resume: document.getElementById('resume-button'),
+                    restart: document.getElementById('restart-button'),
+                    menu: document.getElementById('menu-button'),
+                    // Конец игры
+                    restartGameOver: document.getElementById('restart-game-over-button'),
+                    menuGameOver: document.getElementById('menu-game-over-button'),
+                    // Уровень пройден
+                    nextLevel: document.getElementById('next-level-button'),
+                    menuLevelComplete: document.getElementById('menu-level-complete-button')
+                };
+
+                // Группы блоков
+                this.newBlocks = new THREE.Group();
+                this.placedBlocks = new THREE.Group();
+                this.choppedBlocks = new THREE.Group();
+                this.perfectSliceGroup = new THREE.Group();
+                this.stage.add(this.newBlocks);
+                this.stage.add(this.placedBlocks);
+                this.stage.add(this.choppedBlocks);
+                this.stage.add(this.perfectSliceGroup);
+                
+                // Переменные состояния игры
+                this.blocks = [];
+                this.perfectCombo = 0;
+                this.initialBlockSize = { width: 10, depth: 10 };
+                this.gameMode = this.MODES.CLASSIC;
+                
+                // Переменные для режимов (старые удалены)
+                this.currentPrecisionStrike = 0;
+                this.currentSpeedMultiplier = 1.0;
+
+                // Анимация фона
+                this.bgColors = {
+                    top: new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--bg-gradient-top').trim()),
+                    bottom: new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--bg-gradient-bottom').trim()),
+                    targetTop: new THREE.Color(0x89f7fe),
+                    targetBottom: new THREE.Color(0x66a6ff)
+                };
+                this.blocksSinceColorChange = 0;
+
+                // --- VK ---
+                this.isVK = false;
+                
+                this.init();
+            }
+            
+            // --- Инициализация ---
+            async init() {
+                await this.initVK();
+                this.bindEvents();
+                this.loadSettings();
+                await this.loadStats(); // Загружаем статы
+                this.updateStatsUI();
+                this.setState(this.STATES.MENU);
+                this.tick();
+            }
+            
+            // --- Новая функция инициализации Аудио ---
+            async initAudio() {
+                if (this.sounds) return; // Уже инициализировано
+
+                try {
+                    // 1. Запускаем аудио контекст по требованию VK
+                    await Tone.start();
+                    console.log("Tone.js AudioContext запущен.");
+                    
+                    // 2. Инициализируем SFX
+                    if (typeof Tone === 'undefined' || !Tone.Synth) {
+                        throw new Error("Tone.js не найден");
+                    }
+                    this.sounds = {
+                        click: new Tone.Synth({
+                            oscillator: { type: "sine" },
+                            envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 }
+                        }).toDestination(),
+                        perfect: new Tone.Synth({
+                            oscillator: { type: "triangle" },
+                            envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 }
+                        }).toDestination(),
+                        fail: new Tone.Synth({
+                            oscillator: { type: "square" },
+                            envelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.2 }
+                        }).toDestination(),
+                        ui: new Tone.Synth({ // Звук для кнопок
+                            oscillator: { type: "sine" },
+                            envelope: { attack: 0.005, decay: 0.05, sustain: 0, release: 0.1 }
+                        }).toDestination()
+                    };
+                    console.log("Звуки Tone.js инициализированы.");
+
+                } catch (e) {
+                    console.error("Ошибка инициализации аудио:", e);
+                    this.settings.sfx = false; // Отключаем SFX, если что-то пошло не так
+                    this.ui.sfxToggle.checked = false;
+                }
+
+                // 3. Управляем музыкой
+                this.toggleMusic();
+            }
+
+            // --- Звуки и Вибрация (Обновлено) ---
+            playSound(sound) {
+                if (!this.settings.sfx || !this.sounds) return; // Проверяем и настройку, и инициализацию
+
+                try {
+                    // Tone.start() теперь в initAudio()
+                    if (sound === 'click') this.sounds.click.triggerAttackRelease("C5", "8n");
+                    if (sound === 'perfect') this.sounds.perfect.triggerAttackRelease("G5", "8n");
+                    if (sound === 'fail') this.sounds.fail.triggerAttackRelease("C3", "4n");
+                    if (sound === 'ui') this.sounds.ui.triggerAttackRelease("A5", "16n");
+                } catch (e) {
+                    console.error("Tone.js error:", e);
+                }
+            }
+            
+            // --- Новая функция управления музыкой ---
+            toggleMusic() {
+                if (this.settings.music) {
+                    this.ui.bgMusic.play().catch(e => console.warn("Не удалось воспроизвести музыку (возможно, нужно взаимодействие):", e));
+                } else {
+                    this.ui.bgMusic.pause();
+                }
+            }
+
+            // --- Обновленная Вибрация для VK ---
+            triggerVibration(type = 'short') {
+                if (!this.settings.taptic) return; // Проверяем настройку
+                
+                // 'light', 'medium', 'heavy'
+                const style = type === 'short' ? 'light' : (type === 'long' ? 'heavy' : 'medium');
+                
+                if (this.isVK && vkBridge.supports('VKWebAppTapticImpactOccurred')) {
+                    // Используем VK Taptic API
+                    vkBridge.send('VKWebAppTapticImpactOccurred', { style: style })
+                        .catch(e => console.warn("VK Taptic failed:", e));
+                } else if (navigator.vibrate) {
+                    // Запасной вариант (может не работать в iframe)
+                    const duration = type === 'short' ? 50 : (type === 'long' ? 200 : 100);
+                    navigator.vibrate(duration);
+                }
+            }
+
+            // --- Интеграция с VK (без изменений) ---
+            async initVK() {
+                try {
+                    await vkBridge.send('VKWebAppInit');
+                    this.isVK = true;
+                    console.log('VK Bridge initialized');
+                } catch (error) {
+                    console.error('VK Bridge init failed:', error);
+                    this.isVK = false;
+                }
+            }
+
+            async saveData(data) {
+                const dataString = JSON.stringify(data);
+                if (this.isVK) {
+                    try {
+                        await vkBridge.send('VKWebAppStorageSet', { key: this.VK_STORAGE_KEY, value: dataString });
+                    } catch (e) {
+                        console.error('VK Storage save failed:', e);
+                        localStorage.setItem(this.VK_STORAGE_KEY, dataString); // Fallback
+                    }
+                } else {
+                    localStorage.setItem(this.VK_STORAGE_KEY, dataString);
+                }
+            }
+
+            async loadData() {
+                let loadedData = null;
+                if (this.isVK) {
+                    try {
+                        const data = await vkBridge.send('VKWebAppStorageGet', { keys: [this.VK_STORAGE_KEY] });
+                        if (data.keys[0].value) {
+                            loadedData = data.keys[0].value;
+                        }
+                    } catch (e) {
+                        console.error('VK Storage load failed:', e);
+                        loadedData = localStorage.getItem(this.VK_STORAGE_KEY); // Fallback
+                    }
+                } else {
+                    loadedData = localStorage.getItem(this.VK_STORAGE_KEY);
+                }
+                return loadedData ? JSON.parse(loadedData) : null;
+            }
+            
+            // --- Сохранение/Загрузка Настроек и Статистики (Обновлено) ---
+            
+            saveSettings() {
+                // Сохраняем все настройки
+                this.settings.music = this.ui.musicToggle.checked;
+                this.settings.sfx = this.ui.sfxToggle.checked;
+                this.settings.taptic = this.ui.tapticToggle.checked;
+                
+                // (В реальном приложении, мы бы сохраняли это в localStorage или VK Storage,
+                // но для простоты примера просто держим в памяти)
+                console.log("Настройки сохранены:", this.settings);
+            }
+            
+            loadSettings() {
+                // (В реальном приложении, мы бы загружали это)
+                this.ui.musicToggle.checked = this.settings.music;
+                this.ui.sfxToggle.checked = this.settings.sfx;
+                this.ui.tapticToggle.checked = this.settings.taptic;
+
+                // Применяем настройку музыки при загрузке
+                this.toggleMusic();
+            }
+            
+            async saveStats() {
+                await this.saveData(this.stats);
+            }
+            
+            async loadStats() {
+                const loadedStats = await this.loadData();
+                if (loadedStats) {
+                    this.stats.highScoreClassic = loadedStats.highScoreClassic || 0;
+                    this.stats.highScoreBlitz = loadedStats.highScoreBlitz || 0;     // <-- Изменено
+                    this.stats.highScorePrecision = loadedStats.highScorePrecision || 0; // <-- Изменено
+                }
+            }
+            
+            updateStatsUI() {
+                this.ui.statsHighScoreClassic.innerText = this.stats.highScoreClassic;
+                this.ui.statsHighScoreBlitz.innerText = this.stats.highScoreBlitz;
+                this.ui.statsHighScorePrecision.innerText = this.stats.highScorePrecision;
+            }
+
+            // --- Привязка Событий (Обновлено) ---
+            bindEvents() {
+                // Главное меню
+                this.buttons.startClassic.addEventListener('click', () => { this.startGame(this.MODES.CLASSIC); this.playSound('ui'); });
+                this.buttons.startBlitz.addEventListener('click', () => { this.startGame(this.MODES.BLITZ); this.playSound('ui'); });
+                this.buttons.startPrecision.addEventListener('click', () => { this.startGame(this.MODES.PRECISION); this.playSound('ui'); });
+
+                // Модальные окна
+                this.buttons.rules.addEventListener('click', () => { this.ui.rulesModal.classList.remove('hidden'); this.playSound('ui'); });
+                this.buttons.closeRules.addEventListener('click', () => { this.ui.rulesModal.classList.add('hidden'); this.playSound('ui'); });
+                
+                this.buttons.stats.addEventListener('click', () => {
+                    this.updateStatsUI();
+                    this.ui.statsModal.classList.remove('hidden');
+                    this.playSound('ui');
+                });
+                this.buttons.closeStats.addEventListener('click', () => { this.ui.statsModal.classList.add('hidden'); this.playSound('ui'); });
+                
+                this.buttons.settings.addEventListener('click', () => { this.ui.settingsModal.classList.remove('hidden'); this.playSound('ui'); });
+                this.buttons.closeSettings.addEventListener('click', () => {
+                    // Сохранение происходит при переключении, здесь просто закрываем
+                    this.ui.settingsModal.classList.add('hidden');
+                    this.playSound('ui');
+                });
+                
+                // Слушатели для переключателей настроек
+                this.ui.musicToggle.addEventListener('change', () => {
+                    this.settings.music = this.ui.musicToggle.checked;
+                    this.toggleMusic();
+                    this.saveSettings();
+                });
+                this.ui.sfxToggle.addEventListener('change', () => {
+                    this.settings.sfx = this.ui.sfxToggle.checked;
+                    this.saveSettings();
+                });
+                 this.ui.tapticToggle.addEventListener('change', () => {
+                    this.settings.taptic = this.ui.tapticToggle.checked;
+                    this.saveSettings();
+                });
+
+
+                // Пауза
+                this.buttons.pause.addEventListener('click', () => { this.togglePause(); this.playSound('ui'); });
+                this.buttons.resume.addEventListener('click', () => { this.togglePause(); this.playSound('ui'); });
+                this.buttons.restart.addEventListener('click', () => { this.restartGame(); this.playSound('ui'); });
+                this.buttons.menu.addEventListener('click', () => { this.goToMenu(); this.playSound('ui'); });
+
+                // Конец Игры
+                this.buttons.restartGameOver.addEventListener('click', () => { this.restartGame(); this.playSound('ui'); });
+                this.buttons.menuGameOver.addEventListener('click', () => { this.goToMenu(); this.playSound('ui'); });
+                
+                // Уровень пройден (Логика удалена, но оставим на всякий случай)
+                this.buttons.nextLevel.addEventListener('click', () => this.playSound('ui'));
+                this.buttons.menuLevelComplete.addEventListener('click', () => { this.goToMenu(); this.playSound('ui'); });
+
+                // Игровые действия
+                window.addEventListener('keydown', (e) => { if (e.keyCode === 32) this.onAction(); });
+                this.stage.container.addEventListener('click', () => this.onAction());
+                this.stage.container.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.onAction();
+                });
+            }
+
+            // --- Управление Состоянием Игры ---
+            setState(newState) {
+                this.state = newState;
+                
+                // Скрываем все
+                this.ui.mainMenu.classList.add('hidden');
+                this.ui.rulesModal.classList.add('hidden');
+                this.ui.statsModal.classList.add('hidden');
+                this.ui.settingsModal.classList.add('hidden');
+                this.ui.inGameUI.classList.add('hidden');
+                this.ui.pauseMenu.classList.add('hidden');
+                this.ui.gameOverMenu.classList.add('hidden');
+                this.ui.levelCompleteMenu.classList.add('hidden');
+                this.ui.gameCanvas.style.display = 'none';
+                document.getElementById('container').className = 'container';
+                
+                // Показываем баннер при смене состояний
+                this.showBannerAd();
+
+                // Показываем нужное
+                switch (newState) {
+                    case this.STATES.MENU:
+                        this.ui.mainMenu.classList.remove('hidden');
+                        break;
+                    case this.STATES.PLAYING:
+                        this.ui.inGameUI.classList.remove('hidden');
+                        this.ui.gameCanvas.style.display = 'block';
+                        document.getElementById('container').classList.add('playing');
+                        // Показываем нужные статы для режима
+                        if(this.gameMode === this.MODES.BLITZ) this.ui.inGameStatsBlitz.classList.remove('hidden');
+                        if(this.gameMode === this.MODES.PRECISION) this.ui.inGameStatsPrecision.classList.remove('hidden');
+                        break;
+                    case this.STATES.PAUSED:
+                        this.ui.inGameUI.classList.remove('hidden');
+                        this.ui.pauseMenu.classList.remove('hidden');
+                        this.ui.gameCanvas.style.display = 'block';
+                        if(this.gameMode === this.MODES.BLITZ) this.ui.inGameStatsBlitz.classList.remove('hidden');
+                        if(this.gameMode === this.MODES.PRECISION) this.ui.inGameStatsPrecision.classList.remove('hidden');
+                        break;
+                    case this.STATES.ENDED:
+                        this.ui.inGameUI.classList.remove('hidden');
+                        this.ui.gameOverMenu.classList.remove('hidden');
+                        this.ui.gameCanvas.style.display = 'block';
+                        document.getElementById('container').classList.add('ended');
+                        break;
+                    case this.STATES.LEVEL_COMPLETE:
+                        this.ui.inGameUI.classList.remove('hidden');
+                        this.ui.levelCompleteMenu.classList.remove('hidden');
+                        this.ui.gameCanvas.style.display = 'block';
+                        document.getElementById('container').classList.add('ended');
+                        break;
+                }
+            }
+
+            onAction() {
+                if (this.state === this.STATES.PLAYING) {
+                    this.placeBlock();
+                }
+            }
+            
+            togglePause() {
+                if (this.state === this.STATES.PLAYING) {
+                    // if (this.gameTimer) clearInterval(this.gameTimer); // Таймер удален
+                    this.setState(this.STATES.PAUSED);
+                } else if (this.state === this.STATES.PAUSED) {
+                    // (Логика возобновления таймера удалена)
+                    this.setState(this.STATES.PLAYING);
+                }
+            }
+
+            // --- Логика Игровых Режимов (Обновлено) ---
+            
+            // (getLevelTarget и updateTimer удалены)
+            
+            startGame(mode) {
+                if (this.state !== this.STATES.PLAYING) {
+                    // --- Инициализация Аудио по клику ---
+                    this.initAudio();
+                    
+                    this.gameMode = mode;
+                    
+                    // Сброс UI для режимов
+                    this.ui.inGameStatsBlitz.classList.add('hidden');
+                    this.ui.inGameStatsPrecision.classList.add('hidden');
+                    
+                    // (Таймер удален)
+
+                    // Настройка для режима "Блиц"
+                    if (this.gameMode === this.MODES.BLITZ) {
+                        this.currentSpeedMultiplier = 1.0;
+                        this.ui.speedIndicator.innerText = `x${this.currentSpeedMultiplier.toFixed(1)}`;
+                    }
+                    
+                    // Настройка для режима "Точность"
+                    if (this.gameMode === this.MODES.PRECISION) {
+                        this.currentPrecisionStrike = 0;
+                        this.ui.strikeIndicator.innerText = `🔥 ${this.currentPrecisionStrike}`;
+                    }
+
+                    this.reset();
+                    this.setState(this.STATES.PLAYING);
+                    this.addBlock();
+                }
+            }
+            
+            goToMenu() {
+                // (Таймер удален)
+                this.setState(this.STATES.RESETTING);
+                setTimeout(() => {
+                    this.reset();
+                    this.setState(this.STATES.MENU);
+                }, 500);
+            }
+
+            restartGame() {
+                this.setState(this.STATES.RESETTING);
+                const oldBlocks = this.placedBlocks.children;
+                const removeSpeed = 0.2;
+                const delayAmount = 0.02;
+
+                for (let i = 0; i < oldBlocks.length; i++) {
+                    gsap.to(oldBlocks[i].scale, { 
+                        duration: removeSpeed, 
+                        x: 0, y: 0, z: 0, 
+                        delay: (oldBlocks.length - i) * delayAmount, 
+                        ease: "power1.in" 
+                    });
+                }
+                
+                setTimeout(() => {
+                    // Перезапускаем в том же режиме
+                    this.startGame(this.gameMode);
+                }, (oldBlocks.length * delayAmount + removeSpeed) * 1000);
+            }
+            
+            reset() {
+                // Очищаем группы
+                [this.newBlocks, this.placedBlocks, this.choppedBlocks, this.perfectSliceGroup].forEach(group => {
+                    while(group.children.length > 0) group.remove(group.children[0]);
+                });
+                
+                this.blocks = [];
+                this.perfectCombo = 0;
+                this.blocksSinceColorChange = 0;
+                
+                this.addBlock(); // Добавляем базовый блок
+                this.stage.setCamera(2, 0); // Сброс камеры
+                this.ui.score.innerText = '0';
+            }
+
+            // --- Основная Логика Игры ---
+            placeBlock() {
+                const currentBlock = this.blocks[this.blocks.length - 1];
+                if (!currentBlock || currentBlock.state !== currentBlock.STATES.ACTIVE) return;
+
+                const newBlocks = currentBlock.place();
+                this.newBlocks.remove(currentBlock.mesh);
+
+                if (newBlocks.placed) {
+                    this.placedBlocks.add(newBlocks.placed);
+                    this.blocksSinceColorChange++;
+                    
+                    // Анимация фона
+                    if(this.blocksSinceColorChange >= 5) {
+                        this.blocksSinceColorChange = 0;
+                        this.bgColors.targetBottom.copy(this.bgColors.targetTop);
+                        this.bgColors.targetTop.copy(this.getPastelColor(currentBlock.color));
+                    }
+
+                    if (newBlocks.bonus) {
+                        // Идеальное попадание
+                        this.perfectCombo++;
+                        this.playSound('perfect');
+                        this.triggerVibration('short');
+                        
+                        // Режим "Точность": обновляем счетчик
+                        if (this.gameMode === this.MODES.PRECISION) {
+                            this.currentPrecisionStrike++;
+                            this.ui.strikeIndicator.innerText = `🔥 ${this.currentPrecisionStrike}`;
+                        }
+                        
+                        // (Логика TimeWarp удалена)
+                        
+                        if (this.perfectCombo >= 6) {
+                            const comboBonus = (this.perfectCombo - 5) * 0.25;
+                            const newWidth = Math.min(this.initialBlockSize.width, currentBlock.originalDimension.width + comboBonus);
+                            const newDepth = Math.min(this.initialBlockSize.depth, currentBlock.originalDimension.depth + comboBonus);
+
+                            currentBlock.dimension.width = newWidth;
+                            currentBlock.dimension.depth = newDepth;
+                            
+                            newBlocks.placed.scale.set(
+                                newWidth / currentBlock.originalDimension.width,
+                                1,
+                                newDepth / currentBlock.originalDimension.depth
+                            );
+                        }
+                        
+                        this.showPerfectPlacementText();
+                        this.triggerPerfectSlice(newBlocks.placed.position, currentBlock.dimension);
+                    } else {
+                        // Обычное попадание
+                        this.perfectCombo = 0;
+                        this.playSound('click');
+                        
+                        // --- НОВАЯ ЛОГИКА "ТОЧНОСТИ" ---
+                        if (this.gameMode === this.MODES.PRECISION) {
+                            this.playSound('fail');
+                            this.triggerVibration('long');
+                            this.addBlock(); // Добавляем промахнувшийся блок для наглядности
+                            this.endGame();  // Немедленно завершаем игру
+                            return; // Выходим, не добавляя следующий блок
+                        }
+                        // --- КОНЕЦ ЛОГИКИ ---
+                    }
+                    
+                    // (Логика LevelComplete удалена)
+
+                } else {
+                    // Промах
+                    this.playSound('fail');
+                    this.triggerVibration('long');
+                }
+                
+                if (newBlocks.chopped) {
+                    this.choppedBlocks.add(newBlocks.chopped);
+                    const positionParams = { 
+                        duration: 1, 
+                        y: '-=30', 
+                        ease: "power1.in", 
+                        onComplete: () => this.choppedBlocks.remove(newBlocks.chopped) 
+                    };
+                    
+                    const plane = newBlocks.plane;
+                    if (newBlocks.chopped.position[plane] > newBlocks.placed.position[plane]) {
+                        positionParams[plane] = `+=${40 * Math.abs(newBlocks.direction)}`;
+                    } else {
+                        positionParams[plane] = `-=${40 * Math.abs(newBlocks.direction)}`;
+                    }
+                    gsap.to(newBlocks.chopped.position, positionParams);
+                }
+
+                this.addBlock();
+            }
+
+            addBlock() {
+                const lastBlock = this.blocks.length > 0 ? this.blocks[this.blocks.length - 1] : null;
+                
+                // Если последний блок промахнулся (ИЛИ время вышло, но это проверяется в updateTimer)
+                if (lastBlock && lastBlock.state === lastBlock.STATES.MISSED) {
+                    return this.endGame();
+                }
+                
+                // Обновляем счет (кроме базового блока)
+                const score = Math.max(0, this.blocks.length - 1);
+                this.ui.score.innerText = String(score);
+
+                let newDimensions = null;
+                if (this.perfectCombo >= 6 && lastBlock) {
+                    newDimensions = {
+                        width: lastBlock.dimension.width,
+                        depth: lastBlock.dimension.depth
+                    };
+                }
+
+                const newKidOnTheBlock = new Block(lastBlock, newDimensions);
+
+                // --- НОВАЯ ЛОГИКА "БЛИЦ" ---
+                // Увеличиваем скорость для режима Блиц
+                if (this.gameMode === this.MODES.BLITZ) {
+                    // Формула ускорения
+                    newKidOnTheBlock.speed = -0.15 - (newKidOnTheBlock.index * 0.015);
+                    if (newKidOnTheBlock.speed < -0.5) newKidOnTheBlock.speed = -0.5; // Макс. скорость
+                    
+                    // Обновляем направление с новой скоростью
+                    if (newKidOnTheBlock.direction > 0) {
+                         newKidOnTheBlock.direction = Math.abs(newKidOnTheBlock.speed);
+                    } else {
+                         newKidOnTheBlock.direction = newKidOnTheBlock.speed;
+                    }
+                    
+                    // Обновляем UI
+                    this.currentSpeedMultiplier = (Math.abs(newKidOnTheBlock.speed) / 0.15); // Примерный множитель
+                    this.ui.speedIndicator.innerText = `x${this.currentSpeedMultiplier.toFixed(1)}`;
+                }
+                // --- КОНЕЦ ЛОГИКИ ---
+
+
+                this.blocks.push(newKidOnTheBlock);
+                
+                if (newKidOnTheBlock.state === newKidOnTheBlock.STATES.ACTIVE) {
+                    this.newBlocks.add(newKidOnTheBlock.mesh);
+                } else {
+                    // Это базовый блок
+                    this.placedBlocks.add(newKidOnTheBlock.mesh);
+                }
+
+                this.stage.setCamera(this.blocks.length * 2);
+            }
+            
+            // --- Эффекты и Анимации ---
+            
+            showPerfectPlacementText() {
+                const text = this.ui.perfectPlacementText;
+                gsap.killTweensOf(text); // Убиваем старые анимации
+                gsap.killTweensOf(text.style);
+                
+                text.style.opacity = 1;
+                text.style.transform = 'translateY(20px)';
+                gsap.to(text, { duration: 0.4, transform: 'translateY(0px)' });
+                gsap.to(text.style, { duration: 0.3, opacity: 0, delay: 0.5 });
+            }
+
+            triggerPerfectSlice(position, dimension) {
+                const sliceHeight = 0.1;
+                const padding = 1.5;
+                const sliceGeometry = new THREE.BoxGeometry(dimension.width + padding, sliceHeight, dimension.depth + padding);
+                const sliceMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true });
+                const sliceMesh = new THREE.Mesh(sliceGeometry, sliceMaterial);
+                
+                sliceMesh.position.set(position.x + dimension.width / 2, position.y + (dimension.height/2), position.z + dimension.depth / 2);
+                sliceMesh.scale.set(0, 1, 0);
+                this.perfectSliceGroup.add(sliceMesh);
+                
+                gsap.to(sliceMesh.scale, { duration: 0.2, x: 1, z: 1, ease: "power1.out" });
+                gsap.to(sliceMesh.scale, { duration: 0.3, x: 0, z: 0, ease: "power1.in", delay: 0.2, onComplete: () => {
+                    this.perfectSliceGroup.remove(sliceMesh);
+                }});
+            }
+            
+            getPastelColor(color) {
+                const tempColor = color.clone();
+                const white = new THREE.Color(0xffffff);
+                tempColor.lerp(white, 0.75); // Смешиваем с 75% белого
+                return tempColor;
+            }
+
+            updateBackground() {
+                // Плавная анимация градиента
+                this.bgColors.top.lerp(this.bgColors.targetTop, 0.005);
+                this.bgColors.bottom.lerp(this.bgColors.targetBottom, 0.005);
+                
+                const topHex = '#' + this.bgColors.top.getHexString();
+                const bottomHex = '#' + this.bgColors.bottom.getHexString();
+                
+                document.documentElement.style.setProperty('--bg-gradient-top', topHex);
+                document.documentElement.style.setProperty('--bg-gradient-bottom', bottomHex);
+            }
+
+            // --- Завершение Игры / Уровня ---
+            
+            levelComplete() {
+                this.ui.levelCompleteLevel.innerText = this.currentLevel;
+                this.setState(this.STATES.LEVEL_COMPLETE);
+            }
+
+            async endGame() {
+                // (Таймер удален)
+                
+                // -2 для промаха, -1 для "Точности" (т.к. игра кончается до промаха)
+                let score = Math.max(0, this.blocks.length - 2);
+                if (this.gameMode === this.MODES.PRECISION) {
+                    score = this.currentPrecisionStrike; // В "Точности" счет = кол-во идеальных
+                }
+                 
+                let newRecord = false;
+                
+                // Обновляем заголовки и рекорды в зависимости от режима
+                if (this.gameMode === this.MODES.CLASSIC) {
+                    this.ui.gameOverTitle.innerText = "Игра окончена";
+                    this.ui.gameOverRecordLabel.innerText = "Рекорд (Классика)";
+                    if (score > this.stats.highScoreClassic) {
+                        this.stats.highScoreClassic = score;
+                        newRecord = true;
+                    }
+                    this.ui.gameOverHighScore.innerText = this.stats.highScoreClassic;
+                    
+                } else if (this.gameMode === this.MODES.BLITZ) {
+                    this.ui.gameOverTitle.innerText = "Игра окончена";
+                    this.ui.gameOverRecordLabel.innerText = "Рекорд (Блиц)";
+                    if (score > this.stats.highScoreBlitz) {
+                        this.stats.highScoreBlitz = score;
+                        newRecord = true;
+                    }
+                     this.ui.gameOverHighScore.innerText = this.stats.highScoreBlitz;
+                     
+                } else if (this.gameMode === this.MODES.PRECISION) {
+                     this.ui.gameOverTitle.innerText = "Ошибка!";
+                     this.ui.gameOverRecordLabel.innerText = "Рекорд (Точность)";
+                     if (score > this.stats.highScorePrecision) {
+                        this.stats.highScorePrecision = score;
+                        newRecord = true;
+                     }
+                     this.ui.gameOverHighScore.innerText = this.stats.highScorePrecision;
+                }
+                
+                // Сохраняем новые рекорды
+                if (newRecord) {
+                    await this.saveStats();
+                }
+
+                this.ui.finalScore.innerText = score;
+                this.setState(this.STATES.ENDED);
+                
+                // Показываем рекламу, если набрали много очков
+                if(score > 30) {
+                    this.showInterstitialAd();
+                }
+            }
+
+            // --- Главный Цикл Рендера ---
+            tick = () => {
+                if (this.state === this.STATES.PLAYING || this.state === this.STATES.ENDED || this.state === this.STATES.LEVEL_COMPLETE) {
+                    const topBlock = this.blocks[this.blocks.length - 1];
+                    if (topBlock && topBlock.state === topBlock.STATES.ACTIVE) {
+                        topBlock.tick();
                     }
                 }
-            },
-
-            startTimer() {
-                state.startTime = Date.now();
-                state.timerInterval = setInterval(() => {
-                    if (!state.paused) {
-                        const elapsedTime = (Date.now() - state.startTime) / 1000;
-                        elements.timer.textContent = formatTime(elapsedTime);
-                    }
-                }, 200);
-            },
-            
-            stopTimer() {
-                clearInterval(state.timerInterval);
-                return (Date.now() - state.startTime) / 1000;
-            },
-
-            pauseGame() {
-                state.paused = true;
-                clearInterval(state.timerInterval);
-                ui.showModal('pause');
-            },
-
-            resumeGame() {
-                ui.hideAllModals();
-                state.paused = false;
-                const currentTimeParts = elements.timer.textContent.split(':');
-                const currentTimeInSeconds = parseInt(currentTimeParts[0]) * 60 + parseInt(currentTimeParts[1]);
-                state.startTime = Date.now() - currentTimeInSeconds * 1000;
-                this.startTimer();
-            },
-            
-            win() {
-                const finalTime = this.stopTimer();
-                storage.saveStats(state.difficulty, finalTime);
                 
-                elements.winTime.textContent = formatTime(finalTime);
-                const bestTime = storage.getStats()[state.difficulty];
-                elements.bestTime.textContent = bestTime ? formatTime(bestTime) : '--:--';
+                if (this.state !== this.STATES.PAUSED) {
+                    this.updateBackground();
+                }
                 
-                ui.showModal('win');
+                this.stage.render();
+                requestAnimationFrame(this.tick);
             }
-        };
+        }
 
-        // Инициализация
+        // --- Запуск Игры ---
         window.onload = () => {
-            ui.loadTheme();
-            Object.values(elements.modals).forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        const wasPaused = state.paused;
-                        const isPauseModal = modal.id === 'pause-modal';
-                        ui.hideAllModals();
-                        if (wasPaused && isPauseModal) {
-                           game.resumeGame();
-                        }
-                    }
-                });
-            });
+            const game = new Game();
         };
+        
     </script>
 </body>
 </html>
-
-
